@@ -24,7 +24,7 @@ export default function Login() {
         try {
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-             window.location.href = "/";
+             location.reload();
         } catch (err) {
             setError("Credenciales inválidas o error de conexión");
         }
