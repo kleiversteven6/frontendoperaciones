@@ -1,0 +1,21 @@
+#root {
+
+  margin: 0 auto;
+  text-align: center;
+}
+
+
+
+/* Oculta el menú de desktop en pantallas pequeñas */
+@media (max-width: 767px) {
+    .desktop-menu {
+        display: none !important;
+    }
+}
+
+/* Oculta el botón de hamburguesa en pantallas grandes */
+@media (min-width: 768px) {
+    .mobile-menu {
+        display: none !important;
+    }
+}
