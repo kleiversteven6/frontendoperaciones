@@ -9,7 +9,7 @@ export default function Router() {
   console.log(token);
   
   return (
-    <BrowserRouter  >
+    <BrowserRouter basename="operaciones"  >
       {token =='' ?
         <Routes>
           <Route path="/" element={<Login />} />
