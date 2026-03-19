@@ -10,7 +10,7 @@ import Users from "../Users";
 import Admin from "../Admin";
 import Dashboard from "../Dashboard";
 import ProtectedRoute from "../../components/ProtectedRoute";
-import logo from '../../assets/logo.jpeg';
+import logo from '../../assets/logo.jpg';
 import ListTeam from '../ListTeam';
 import Despacho from '../Despacho';
 import Guias from '../Guias';
