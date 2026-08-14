@@ -108,8 +108,7 @@ export default function Monitor() {
     try {
       const res = await fetch(rnotasFactRecientes, requestOptions);
       const data = await res.json();
-      console.log(data);
-      
+
       if (data.error) {
 
       } else {
@@ -265,6 +264,7 @@ export default function Monitor() {
                     <Table.HeaderCell>Pedido</Table.HeaderCell>
                     <Table.HeaderCell>Fecha</Table.HeaderCell>
                     <Table.HeaderCell>Cliente</Table.HeaderCell>
+                    <Table.HeaderCell>Monto</Table.HeaderCell>
                     <Table.HeaderCell>Segmento</Table.HeaderCell>
                     <Table.HeaderCell>Bultos</Table.HeaderCell>
                     <Table.HeaderCell>Estatus</Table.HeaderCell>
@@ -295,19 +295,29 @@ export default function Monitor() {
                             transition: "background 0.2s",
                           }}
                         >
-                          <Table.Cell style={{ fontSize: "16px", fontWeight: "bolder" }}>
-                            <Label size="big" color="black" basic > {factura.fact_num}</Label>
+                          <Table.Cell style={{ fontSize: "16px", fontWeight: "bolder" }} textAlign="center">
 
+                            {factura.campo2.trim() != '' && <Label color="red"  basic size="large">{factura.campo2.trim()}</Label>}
+                            <div>{factura.fact_num}</div>
                           </Table.Cell>
                           <Table.Cell style={{ fontSize: "16px", fontWeight: "bolder" }} >{factura.fec_emis?.slice(0, 10)}</Table.Cell>
                           <Table.Cell width={6} style={{ fontSize: "16px", fontWeight: "bolder" }} >
                             {factura.co_cli} - {factura.cli_des}
                           </Table.Cell>
                           <Table.Cell>
+                            <Label color="orange" basic size="large" > {Number(factura?.tot_bruto / (factura?.tasa || 1)).toLocaleString('es-VE', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2
+                            })}</Label>
+                          </Table.Cell>
+                          <Table.Cell>
                             <Label color="grey" basic size="big" > {factura.seg_des}</Label>
                           </Table.Cell>
                           <Table.Cell><Label size="big" basic color={factura.nro_bultos ? "teal" : "grey"}>{factura.nro_bultos ?? "-"}</Label></Table.Cell>
-                          <Table.Cell><Label size="big" style={getStatusBadgeStyle(factura.estatus)}>{factura.estatus ?? "-"}</Label></Table.Cell>
+                          <Table.Cell>
+                            <Label size="big" style={getStatusBadgeStyle(factura.estatus)}>{factura.estatus ?? "-"}</Label>
+
+                          </Table.Cell>
                           <Table.Cell>{factura.usuario || "-"}</Table.Cell>
                           <Table.Cell>{getElapsedTime(factura.tiempo_inicio)}</Table.Cell>
 

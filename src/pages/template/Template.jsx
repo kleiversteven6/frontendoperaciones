@@ -15,9 +15,10 @@ import ListTeam from '../ListTeam';
 import Despacho from '../Despacho';
 import Guias from '../Guias';
 import { ToastContainer } from 'react-toastify';
+import PreDespacho from '../PreDespacho';
+import Empresa from '../Empresa';
 
 export default function Template() {
-    const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const [activeItem, setActiveItem] = useState("Home");
     const [visible, setVisible] = useState(false);
@@ -28,129 +29,165 @@ export default function Template() {
         window.location.href = "/";
     };
 
-    const optionsMenu = [
-        { name: 'preparacion', from: 'preparacion', role: '' },
-        { name: 'chequeo', from: 'chequeo', role: '' },
-        { name: 'embalaje', from: 'embalaje', role: '' },
-        { name: 'monitor', from: 'monitor', role: '' },
-        { name: 'admin', from: 'admin', role: 'admin' },
-        { name: 'users', from: 'users', role: 'admin' },
-        { name: 'dashboard', from: 'dashboard', role: 'admin' },
-        { name: 'listteam', from: 'listteam', role: 'admin' },
-        { name: 'Despacho', from: 'despacho', role: '' },
-        { name: 'Guias', from: 'guias', role: '' }
+    // --- CONFIGURACIÓN DEL MENÚ ---
+    // Aquí puedes añadir futuras opciones fácilmente
+    const menuConfig = [
+        { name: 'Inicio', to: '/', role: '' },
+        {
+            name: 'Administrar',
+            role: 'admin', // Solo visible para admin
+            isDropdown: true,
+            children: [
+                { name: 'Usuarios', to: '/users' },
+              //  { name: 'Empresa', to: '/empresa' }, // Nueva opción
+                { name: 'Dashboard', to: '/dashboard' },
+                { name: 'List Team', to: '/listteam' },
+                { name: 'Admin General', to: '/admin' },
+            ]
+        },
+        {
+            name: 'Pedidos',
+            role: '',
+            isDropdown: true,
+            children: [
+                { name: 'Preparación', to: '/preparacion' },
+                { name: 'Chequeo', to: '/chequeo' },
+                { name: 'Embalaje', to: '/embalaje' },
+            ]
+        },
+        { name: 'Monitor', to: '/monitor', role: '' },
+
+        { name: 'Pre despacho', to: '/predespacho', role: '' },
+        { name: 'Despacho', to: '/despacho', role: '' },
+        { name: 'Guias', to: '/guias', role: '' }
     ];
-    const options = [
-        { key: 'user', text: 'Account', icon: 'user' },
-        { key: 'settings', text: 'Settings', icon: 'settings' },
-        { key: 'sign-out', text: 'Sign Out', icon: 'sign out' },
-    ]
 
     const handleItemClick = (name) => {
         setActiveItem(name);
-        setVisible(false); // Cierra el sidebar al seleccionar una opción
+        setVisible(false);
     };
+
+    // Función para validar si el usuario tiene permiso
+    const hasPermission = (item) => item.role === '' || item.role === user.role;
 
     return (
         <>
-        <ToastContainer  />
-            {/* Menú para desktop */}
-            <Menu style={{ marginBottom: 0, display: 'flex', flexWrap: 'nowrap' }} tabular className="desktop-menu">
-                {<Menu.Item>
+            <ToastContainer />
+
+            {/* --- MENÚ DESKTOP --- */}
+            <Menu style={{ marginBottom: 0 }} tabular className="desktop-menu">
+                <Menu.Item>
                     <Image size='tiny' src={logo} />
-                </Menu.Item>}
-                <Menu.Item
-                    name='Inicio'
-                    active={activeItem === 'Inicio'}
-                    onClick={() => handleItemClick('Inicio')}
-                    as={NavLink}
-                    to="/"
-                />
-                {optionsMenu.map((m) =>
-                    m.role === '' || m.role === user.role ? (
+                </Menu.Item>
+
+                {menuConfig.map((item) => {
+                    if (!hasPermission(item)) return null;
+
+                    if (item.isDropdown) {
+                        return (
+                            <Dropdown
+                                item
+                                key={item.name}
+                                text={item.name}
+                                active={item.children.some(child => activeItem === child.name)}
+                            >
+                                <Dropdown.Menu>
+                                    {item.children.map(child => (
+                                        <Dropdown.Item
+                                            key={child.name}
+                                            as={NavLink}
+                                            to={child.to}
+                                            onClick={() => handleItemClick(child.name)}
+                                            active={activeItem === child.name}
+                                        >
+                                            {child.name}
+                                        </Dropdown.Item>
+                                    ))}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        );
+                    }
+
+                    return (
                         <Menu.Item
-                            key={m.name}
-                            name={m.name}
-                            active={activeItem === m.name}
-                            onClick={() => handleItemClick(m.name)}
+                            key={item.name}
+                            name={item.name}
                             as={NavLink}
-                            to={`/${m.from}`}
+                            to={item.to}
+                            active={activeItem === item.name}
+                            onClick={() => handleItemClick(item.name)}
                         />
-                    ) : null
-                )}
+                    );
+                })}
+
                 <Menu.Menu position='right'>
                     <Menu.Item style={{ padding: 0 }}>
-                        <Dropdown
-                            item
-                            icon={<Icon name="user  " size="large" />}
-                            className="icon"
-                            text={user.username || "Usuario"}
-                        >
+                        <Dropdown item icon={<Icon name="user" />} text={user.username || "Usuario"}>
                             <Dropdown.Menu>
-                                <Dropdown.Item onClick={()=>handleLogout()}>
-                                    <Icon name="power off" />
-                                    Cerrar sesion
-                                </Dropdown.Item>
+                                <Dropdown.Item onClick={handleLogout} icon="power off" content="Cerrar sesión" />
                             </Dropdown.Menu>
                         </Dropdown>
                     </Menu.Item>
                 </Menu.Menu>
-
-
-
             </Menu>
 
-            {/* Menú para mobile (Sidebar) */}
+            {/* --- MENÚ MOBILE --- */}
             <div className="mobile-menu">
                 <Menu style={{ marginBottom: 0 }}>
-                    <Menu.Item>
-                        <Button icon onClick={() => setVisible(!visible)}>
-                            <Icon name='bars' />
-                        </Button>
-                    </Menu.Item>
-                    <Menu.Item position='right'>
-                        Hola, <span className="font-semibold">{user.username || "Usuario"}</span>
-                    </Menu.Item>
+                    <Menu.Item icon='bars' onClick={() => setVisible(true)} />
+                    <Menu.Item position='right'>Usuario: {user.username}</Menu.Item>
                 </Menu>
+
                 <Sidebar
                     as={Menu}
                     animation='overlay'
-                    direction='left'
                     visible={visible}
                     onHide={() => setVisible(false)}
                     vertical
                 >
-                    <Menu.Item>
-                        <Image size='tiny' src={logo} style={{ margin: '10px auto' }} />
-                    </Menu.Item>
-                    <Menu.Item
-                        name='Inicio'
-                        active={activeItem === 'Inicio'}
-                        onClick={() => handleItemClick('Inicio')}
-                        as={NavLink}
-                        to="/"
-                    />
-                    {optionsMenu.map((m) =>
-                        m.role === '' || m.role === user.role ? (
+                    <Menu.Item><Image size='tiny' src={logo} centered /></Menu.Item>
+
+                    {menuConfig.map((item) => {
+                        if (!hasPermission(item)) return null;
+
+                        if (item.isDropdown) {
+                            return (
+                                <Menu.Item key={item.name}>
+                                    <Menu.Header>{item.name}</Menu.Header>
+                                    <Menu.Menu>
+                                        {item.children.map(child => (
+                                            <Menu.Item
+                                                key={child.name}
+                                                as={NavLink}
+                                                to={child.to}
+                                                content={child.name}
+                                                onClick={() => handleItemClick(child.name)}
+                                            />
+                                        ))}
+                                    </Menu.Menu>
+                                </Menu.Item>
+                            );
+                        }
+
+                        return (
                             <Menu.Item
-                                key={m.name}
-                                name={m.name}
-                                active={activeItem === m.name}
-                                onClick={() => handleItemClick(m.name)}
+                                key={item.name}
                                 as={NavLink}
-                                to={`/${m.from}`}
+                                to={item.to}
+                                content={item.name}
+                                onClick={() => handleItemClick(item.name)}
                             />
-                        ) : null
-                    )}
-                    <Menu.Item style={{ color: "red" }} onClick={handleLogout}>
-                        <Icon name='power' />
-                        Salir
+                        );
+                    })}
+
+                    <Menu.Item onClick={handleLogout} style={{ color: 'red' }}>
+                        <Icon name='power' /> Salir
                     </Menu.Item>
                 </Sidebar>
             </div>
 
-            {/* Contenido principal */}
-            <Segment secondary style={{ marginTop: 0, padding: 0 }}>
+            {/* --- RUTAS --- */}
+            <Segment secondary style={{ marginTop: 0, minHeight: '85vh', padding: 0 }}>
                 <Routes>
                     <Route element={<ProtectedRoute />}>
                         <Route path="/" element={<App />} />
@@ -160,6 +197,9 @@ export default function Template() {
                         <Route path="/monitor/:buscar?" element={<Monitor />} />
                         <Route path="/despacho" element={<Despacho />} />
                         <Route path="/guias" element={<Guias />} />
+                        <Route path="/predespacho" element={<PreDespacho />} />
+                        {/* Agrega aquí la ruta de Empresa cuando tengas el componente */}
+                        <Route path="/empresa" element={<Empresa/>} />
 
                         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                             <Route path="/admin" element={<Admin />} />

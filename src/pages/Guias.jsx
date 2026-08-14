@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { listaguias, guiapdf } from '../context/globalvars';
 import { Button, Container, Modal, Segment, Table, Embed } from 'semantic-ui-react';
+import axios from 'axios';
 
 export default function Guias() {
     const [lguias, setLguias] = useState([]);
@@ -14,33 +15,46 @@ export default function Guias() {
         fetchUsers();
     }, []);
 
-    const fetchUsers = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                throw new Error("Token no encontrado");
-            }
 
-            const res = await fetch(listaguias, {
-                method: "POST", // Cambiado a GET ya que solo estamos consultando
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-            });
 
-            if (!res.ok) {
-                throw new Error(`Error al cargar guías: ${res.statusText}`);
-            }
-            const data = await res.json();
-            setLguias(data);
-        } catch (err) {
-            setError(err.message);
-            console.error("Error al cargar guías:", err);
-        } finally {
-            setLoading(false);
+const fetchUsers = async () => {
+    try {
+        const token = localStorage.getItem("token");
+        console.log(token);
+        
+        if (!token) {
+            throw new Error("Token no encontrado");
         }
-    };
+        const response = await axios.post(listaguias, {
+            apikey: token
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        console.log(response.data);
+        setLguias(response.data);
+    } catch (err) {
+        let errorMessage = "Error desconocido";
+        if (err.response) {
+            // El servidor respondió con un código de estado fuera del rango 2xx
+            errorMessage = `Error al cargar guías: ${err.response.status} - ${err.response.statusText}`;
+            console.error("Detalles del error:", err.response.data);
+        } else if (err.request) {
+            // La solicitud fue hecha pero no se recibió respuesta
+            errorMessage = "No se recibió respuesta del servidor";
+        } else {
+            // Algo más ocurrió al configurar la solicitud
+            errorMessage = err.message;
+        }
+        setError(errorMessage);
+        console.error("Error al cargar guías:", err);
+    } finally {
+        setLoading(false);
+    }
+};
 
     const verpdf = async (guiaId) => {
         try {
@@ -83,30 +97,30 @@ export default function Guias() {
     }
 
     return (
-        <Segment secondary basic style={{ height: '100vh' }}>
+        <Segment secondary basic style={{ minHeight: '100vh' }}>
             <Modal size='fullscreen' open={open} onClose={() => {
                 setOpen(false);
                 window.URL.revokeObjectURL(pdfUrl); // Liberar la URL del objeto cuando se cierre el modal
             }}>
                 <Modal.Header>Guía #{selectedGuiaId}</Modal.Header>
                 <Modal.Content>
-                    
-                {pdfUrl ? (
-                  <div className="flex-1 min-h-[600px] border-2 border-[#6200a6]/20 rounded-lg overflow-hidden">
-                    <iframe
-                      src={pdfUrl}
-                      className="w-full h-full min-h-[600px]"
-                      title="Vista Previa de Etiqueta"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex-1 min-h-[600px] flex items-center justify-center border-2 border-dashed border-[#6200a6]/20 rounded-lg">
-                    <div className="text-center text-[#6200a6]/60">
-                      <div className="text-4xl mb-4">📄</div>
-                      <div className="text-lg font-semibold">Cargando vista previa...</div>
-                    </div>
-                  </div>
-                )}
+
+                    {pdfUrl ? (
+                        <div className="flex-1 min-h-[600px] border-2 border-[#6200a6]/20 rounded-lg overflow-hidden">
+                            <iframe
+                                src={pdfUrl}
+                                className="w-full h-full min-h-[600px]"
+                                title="Vista Previa de Etiqueta"
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex-1 min-h-[600px] flex items-center justify-center border-2 border-dashed border-[#6200a6]/20 rounded-lg">
+                            <div className="text-center text-[#6200a6]/60">
+                                <div className="text-4xl mb-4">📄</div>
+                                <div className="text-lg font-semibold">Cargando vista previa...</div>
+                            </div>
+                        </div>
+                    )}
                 </Modal.Content>
                 <Modal.Actions>
                     <Button color='red' onClick={() => {

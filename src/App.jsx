@@ -13,11 +13,11 @@ export default function App() {
     { text: 'Embalaje', icon: 'box', to: '/embalaje', desc: ' Empaquetado y etiquetado final.', color: 'purple', user: 'all' },
     { text: 'Monitor', icon: 'tv', to: '/monitor', desc: 'Visualización de estado en tiempo real.', color: 'olive', user: 'all' },
     { text: 'Admin', icon: 'cogs', to: '/admin', desc: 'Gestión de procesos y retrocesos.', color: 'red', user: 'admin' },
-    { text: 'Usuarios', icon: 'users', to: '/usuarios', desc: 'Gestión de operadores y administradores.', color: 'teal', user: 'admin' },
-    { text: 'Productividad', icon: 'chart bar', to: '/productividad', desc: 'Gestión y armado de pedidos para despacho.', color: 'orange', user: 'admin' },
+    { text: 'Usuarios', icon: 'users', to: '/users', desc: 'Gestión de operadores y administradores.', color: 'teal', user: 'admin' },
+    { text: 'Productividad', icon: 'chart bar', to: '/dashboard', desc: 'Gestión y armado de pedidos para despacho.', color: 'orange', user: 'admin' },
     { text: 'List Team', icon: 'ordered list', to: '/listeam', desc: 'Gestión y armado de pedidos para despacho.', color: 'brown', user: 'admin' },
     { text: 'Despacho', icon: 'truck', to: '/despacho', desc: 'Gestión y armado de pedidos para despacho.', color: 'pink', user: 'all' },
-    { text: 'Guias', icon: 'truck', to: '/despacho', desc: 'Lista de guias generadas.', color: 'violet', user: 'all' },
+    { text: 'Guias', icon: 'truck', to: '/guias', desc: 'Lista de guias generadas.', color: 'violet', user: 'all' },
   ];
   useEffect(() => {
     const handleResize = () => {

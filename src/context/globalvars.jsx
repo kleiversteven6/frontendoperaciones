@@ -3,10 +3,12 @@ const defaultRoute = "api";
 export function getDominio(routeApi = defaultRoute) {
   const serverName = window.location.hostname;
 
-  //return `http://192.168.68.110:8002/${routeApi}/`;
+ // return `http://192.168.0.114:8002/${routeApi}/`;
   return `http://${serverName}:8002/${routeApi}/`;
 }
-
+export var negozeo ="https://backend.negozeo.com/";
+export var listarutas = negozeo + "api/listarutas";
+export var pedidosembalaje = getDominio() + "others/pedidosembalaje";
 //RUTAS LOGIN
 export var authlogin = getDominio() + "auth/login";
 export var orders = getDominio() + "orders";
@@ -34,3 +36,9 @@ export var crearguia = getDominio() + "pedidos/crearguia";
 export var guiapdf = getDominio() + "pedidos/guiapdf";
 export var pedidosDespachar = getDominio() + "pedidos/despachar";
 export var removedespachar = getDominio() + "pedidos/removedespachar";
+
+
+// export var authlogin = getDominio2() + "api/loginadmin";
+// export var rnotasFactRecientes = getDominio() + "rnotas/facturas-recientes";
+
+// export var listaguias = getDominio2() + "api/listarguias";

@@ -7,9 +7,9 @@ import Template from "./pages/template/template";
 export default function Router() {
   const token = localStorage.getItem("token") || "";
   console.log(token);
-  
+  //basename="/operaciones"
   return (
-    <BrowserRouter basename="operaciones"  >
+    <BrowserRouter basename="/operaciones">
       {token =='' ?
         <Routes>
           <Route path="/" element={<Login />} />

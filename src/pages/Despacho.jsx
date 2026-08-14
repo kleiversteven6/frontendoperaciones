@@ -13,7 +13,8 @@ import {
   Card,
   Header,
   Segment,
-  Sticky
+  Sticky,
+  Select
 } from "semantic-ui-react";
 import Input from "../components/Input";
 import {
@@ -24,6 +25,8 @@ import {
   crearguia,
   guiapdf
 } from "../context/globalvars";
+import { useEffect } from "react";
+const apikey = import.meta.env.VITE_API_KEY;
 
 export default function Despacho() {
   const navigate = useNavigate();
@@ -42,19 +45,51 @@ export default function Despacho() {
   const [showScanner, setShowScanner] = useState(false);
   const [scannerKey, setScannerKey] = useState(0);
 
+  const [rutas, setRutas] = useState([]);
+  const [selruta, setSelRuta] = useState({});
+
+  // 1. Cargar las rutas existentes al entrar a la página
+  // useEffect(() => {
+  //   fetchRutas();
+  // }, []);
+
+  // const fetchRutas = async () => {
+  //   try {
+
+  //     const response = await fetch(listarutas, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json'
+  //       },
+  //       body: JSON.stringify({ apikey: apikey, type: 1 })
+  //     });
+  //     const data = await response.json();
+
+
+  //     const rutas = data.datos.map(item => ({
+  //       key: item.TABL_Id,
+  //       text: item.TABL_Descripcion,
+  //       value: item,
+  //     }));
+  //     console.log(data.datos);
+
+  //     setRutas(rutas ?? []);
+  //   } catch (error) {
+  //     console.error("Error cargando rutas:", error);
+  //   }
+  // };
+
   // Buscar pedido por código manual o escaneado
   const buscarPedido = async (scannedCode = null) => {
-    let code=null;
+    let code = null;
     if (showScanner) {
-        code = scannedCode || codigo;
-    }else{
-        
-        code = codigo || scannedCode;
+      code = scannedCode || codigo;
+    } else {
+
+      code = codigo || scannedCode;
     }
     if (!code) return;
-console.log(scannedCode);
-console.log(codigo);
-
     // Verificar si el pedido ya existe en la lista
     const existPed = pedidos.find((f) => f.fact_num === code);
     if (existPed) {
@@ -81,10 +116,10 @@ console.log(codigo);
       });
       return;
     }
-console.log({
-          fact_num: code,
-          processType: "En guia",
-        });
+    console.log({
+      fact_num: code,
+      processType: "En guia",
+    });
 
     try {
       const res = await fetch(pedidosFacturas, {
@@ -104,16 +139,13 @@ console.log({
         if (res.status === 409) {
           const { user, area, since } = errorData.details || {};
           toast.warning(
-            `Este pedido está siendo procesado por <b>${
-              user || "otro usuario"
-            }</b> en el área de <b>${
-              area || "Desconocida"
-            }</b>.<br>Desde: ${
-              since ? new Date(since).toLocaleString() : "Desconocido"
+            `Este pedido está siendo procesado por <b>${user || "otro usuario"
+            }</b> en el área de <b>${area || "Desconocida"
+            }</b>.<br>Desde: ${since ? new Date(since).toLocaleString() : "Desconocido"
             }`
           );
         } else if (res.status === 400) {
-          toast.error(errorData.message ||"Error de Secuencia");
+          toast.error(errorData.message || "Error de Secuencia");
         } else {
           toast.error(errorData.message || "Error al buscar el pedido");
         }
@@ -152,6 +184,7 @@ console.log({
     }
   };
 
+
   // Ver PDF de la guía
   const verpdf = async (guiaId) => {
     try {
@@ -181,6 +214,18 @@ console.log({
   };
 
   // Generar guía de despacho
+  const nuevaGuiaRed = async (guia,) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(crearguia, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ pedidos, selruta }),
+    });
+  }
+
   const generarGuia = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -190,11 +235,12 @@ console.log({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ pedidos }),
+        body: JSON.stringify({ pedidos, selruta }),
       });
-
       const datos = await res.json();
       setPedidos([]);
+
+      //nuevaGuiaRed(datos.guia,datos.bruto,datos.iva,datos,neto);
       verpdf(datos.guia);
 
       Swal.fire({
@@ -336,30 +382,33 @@ console.log({
         <Container>
           <Header as="h1">Despacho de Pedidos</Header>
           <Grid centered>
-            <Grid.Column width={4}>
+            <Grid.Column computer={4} tablet={6} mobile={16}>
               <Sticky>
                 <Card>
                   <Card.Content>
                     <Form>
-                
+                      Numero de pedido
+                      <Form.Group >
                         <Form.Input
+                        width={14}
                           fluid
                           type="number"
-                          label="Código de Pedido"
+                           
                           placeholder="Ej. PED123"
                           value={codigo}
                           onChange={(e) => setCodigo(e.target.value)}
                           onKeyDown={(e) =>
                             e.key === "Enter" && buscarPedido()
                           }
-                          action={
-                            <Button
-                              icon="qrcode"
-                              color="blue"
-                              onClick={() => setShowScanner(true)}
-                            />
-                          }
+
                         />
+                        <Button
+                          type="button"
+                          icon="qrcode"
+                          color="blue"
+                          onClick={() => setShowScanner(true)}
+                        />
+                      </Form.Group>
                       <Form.Button
                         type="button"
                         color="blue"
@@ -377,8 +426,12 @@ console.log({
 
             {/* Tabla de pedidos */}
             {pedidos.length > 0 && (
-              <Grid.Column width={12}>
+              <Grid.Column computer={12} tablet={10} mobile={16}>
                 <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
+                  <Select options={rutas}
+                    placeholder="Seleccionar ruta"
+                    onChange={(e, { value }) => setSelRuta(value)}
+                  />
                   <Button color="blue" onClick={generarGuia}>
                     Despachar {pedidos.length} pedidos
                   </Button>
